@@ -1,6 +1,13 @@
 import Labyrinth
-import Dijkstra
+import Graph
+#import Dijkstra
 
-Labyrinth.makeLabyrinth()
-Labyrinth.printMatrix()
-Dijkstra.Dijkstra()
+labyrinth = Labyrinth.Labyrinth()
+graph = Graph.Graph()
+#labyrinth.makeLabyrinth()
+labyrinth.createCustomLabyrinth()
+labyrinth.printMatrix()
+#graph.createGraph(labyrinth)
+graph.createGraph(labyrinth)
+#graph.printGraph()
+graph.findPathDijkstra()
