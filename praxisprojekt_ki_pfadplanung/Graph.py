@@ -40,7 +40,7 @@ class Graph:
         for key, value in self.graph.items():
             print key, value
             
-    def findPathDijkstra(self):
+    def findAllPathsDijkstra(self):
         assert (len(self.graph) > 0),"Graph is empty!"
         # extend each item in graph and add previous node and distance
         for key, value in self.graph.items():
@@ -52,9 +52,7 @@ class Graph:
             else:
                 node['dist'] = self.infinity
             value.append(node)
-
-        self.printGraph()
-        
+            
         unvisitedNodes = [self.startNode_id]
         visitedNodes = []
         while(len(unvisitedNodes) > 0):
@@ -73,5 +71,19 @@ class Graph:
                     if neighbourID in unvisitedNodes and distance + 1 < self.graph[neighbourID][len(self.graph[neighbourID])-1]['dist']: 
                         self.graph[neighbourID][len(self.graph[neighbourID])-1]['dist'] = distance + 1 # constant distance between adjacent fields
                         self.graph[neighbourID][len(self.graph[neighbourID])-1]['prev'] = nodeID 
-        print "#####################################################"
-        self.printGraph()
+
+    def findPathDijkstra(self, goal_x, goal_y):
+        self.findAllPathsDijkstra()
+        assert(goal_x < self.constantObj.CONST_WIDTH and goal_y < self.constantObj.CONST_HEIGHT), "Goal is beyond the labyrinth"
+        path=[]
+        # id of the goal node
+        goalID = goal_y * self.constantObj.CONST_WIDTH + goal_x
+        #
+        assert(goalID in self.graph), "Goal can not be reached from start-point!"
+        path.append(goalID)
+        previousNodeID = self.graph[goalID][len(self.graph[goalID])-1]['prev']
+        while previousNodeID != None:           
+            path.append(previousNodeID)
+            previousNodeID = self.graph[previousNodeID][len(self.graph[previousNodeID])-1]['prev']
+        path.reverse()
+        return path
