@@ -21,6 +21,11 @@ class Labyrinth:
                         ['.','#','#','.','.','.','.','.'],
                         ['.','#','#','.','#','#','#','#'],
                         ['.','.','.','.','#','#','#','#'],]
+    
+    def createTinyCustomLabyrinth(self):
+        self.Matrix = [ ['.','.','#'],
+                        ['#','.','#'],
+                        ['.','.','.']]
         
     def checkDirections(self):
         possibleDirections = []

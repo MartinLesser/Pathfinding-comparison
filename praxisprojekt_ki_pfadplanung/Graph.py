@@ -4,6 +4,7 @@ import constants
 class Graph:
     def __init__(self):
         self.graph = {}
+        self.searchTree = {}
         self.constantObj = constants.Constants()
         self.startNode_x = 0
         self.startNode_y = 0
@@ -73,6 +74,7 @@ class Graph:
                         self.graph[neighbourID][len(self.graph[neighbourID])-1]['prev'] = nodeID 
 
     def findPathDijkstra(self, goal_x, goal_y):
+        assert (len(self.graph) > 0),"Graph is empty!"
         self.findAllPathsDijkstra()
         assert(goal_x < self.constantObj.CONST_WIDTH and goal_y < self.constantObj.CONST_HEIGHT), "Goal is beyond the labyrinth"
         path=[]
@@ -87,3 +89,26 @@ class Graph:
             previousNodeID = self.graph[previousNodeID][len(self.graph[previousNodeID])-1]['prev']
         path.reverse()
         return path
+    
+    def createSearchTree(self, goal_x, goal_y):
+        assert (len(self.graph) > 0),"Graph is empty!"
+        # id of the goal node
+        goalID = goal_y * self.constantObj.CONST_WIDTH + goal_x
+        assert(goalID in self.graph), "Goal can not be reached from start-point!"
+        listOfNeighbours = [self.startNode_id]
+        visitedNeighbours = []
+        while(len(listOfNeighbours) > 0):
+            nodeID = listOfNeighbours.pop(0)
+            visitedNeighbours.append(nodeID)
+            list = []
+            # iterate through all neighbours
+            for i, val in enumerate(self.graph[nodeID]):             
+                neighbourID = val
+                if neighbourID not in visitedNeighbours or neighbourID == self.startNode_id or neighbourID == goalID:
+                    list.append(neighbourID)               
+                    # add neighbours at the front of the list of unvisited nodes
+                    if neighbourID != self.startNode_id and neighbourID != goalID:
+                        listOfNeighbours.insert(0, neighbourID)
+            self.searchTree[nodeID] = list
+        for key, value in self.searchTree.items():
+            print key, value
