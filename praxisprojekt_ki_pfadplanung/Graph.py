@@ -1,37 +1,33 @@
-import Labyrinth
-import constants
+from constants import CONST_WIDTH
+from constants import CONST_HEIGHT
+from constants import CONST_EMPTY_SYMBOL
 
 class Graph:
     def __init__(self):
         self.graph = {}
         self.searchTree = {}
-        self.constantObj = constants.Constants()
         self.startNode_x = 0
         self.startNode_y = 0
-        self.startNode_id = self.startNode_y * self.constantObj.CONST_WIDTH + self.startNode_x
+        self.startNode_id = self.startNode_y * CONST_WIDTH + self.startNode_x
         self.infinity = 99999
         
     def createGraph(self, labyrinth):
-        empty_symbol = self.constantObj.CONST_EMPTY_SYMBOL
-        wall_symbol = self.constantObj.CONST_WALL_SYMBOL
-        width = self.constantObj.CONST_WIDTH
-        heigth = self.constantObj.CONST_HEIGHT
         id = 0
-        for y in range(heigth): 
-            for x in range(width):
-                if labyrinth.Matrix[y][x] == empty_symbol:
+        for y in range(CONST_HEIGHT):
+            for x in range(CONST_WIDTH):
+                if labyrinth.Matrix[y][x] == CONST_EMPTY_SYMBOL:
                     list = []
                     # north
-                    if y-1 >= 0 and labyrinth.Matrix[y-1][x] == empty_symbol:
-                        list.append(id-width)
+                    if y-1 >= 0 and labyrinth.Matrix[y-1][x] == CONST_EMPTY_SYMBOL:
+                        list.append(id-CONST_WIDTH)
                     # east
-                    if x+1 < width and labyrinth.Matrix[y][x+1] == empty_symbol:
+                    if x+1 < CONST_WIDTH and labyrinth.Matrix[y][x+1] == CONST_EMPTY_SYMBOL:
                         list.append(id+1)
                     # south
-                    if y+1 < heigth and labyrinth.Matrix[y+1][x] == empty_symbol:
-                        list.append(id+width)
+                    if y+1 < CONST_HEIGHT and labyrinth.Matrix[y+1][x] == CONST_EMPTY_SYMBOL:
+                        list.append(id+CONST_WIDTH)
                     # west
-                    if x-1 >= 0 and labyrinth.Matrix[y][x-1] == empty_symbol:
+                    if x-1 >= 0 and labyrinth.Matrix[y][x-1] == CONST_EMPTY_SYMBOL:
                         list.append(id-1)
 
                     self.graph[id] = list
@@ -76,10 +72,10 @@ class Graph:
     def findPathDijkstra(self, goal_x, goal_y):
         assert (len(self.graph) > 0),"Graph is empty!"
         self.findAllPathsDijkstra()
-        assert(goal_x < self.constantObj.CONST_WIDTH and goal_y < self.constantObj.CONST_HEIGHT), "Goal is beyond the labyrinth"
+        assert(goal_x < CONST_WIDTH and goal_y < CONST_HEIGHT), "Goal is beyond the labyrinth"
         path=[]
         # id of the goal node
-        goalID = goal_y * self.constantObj.CONST_WIDTH + goal_x
+        goalID = goal_y * CONST_WIDTH + goal_x
         #
         assert(goalID in self.graph), "Goal can not be reached from start-point!"
         path.append(goalID)
@@ -89,26 +85,3 @@ class Graph:
             previousNodeID = self.graph[previousNodeID][len(self.graph[previousNodeID])-1]['prev']
         path.reverse()
         return path
-    
-    def createSearchTree(self, goal_x, goal_y):
-        assert (len(self.graph) > 0),"Graph is empty!"
-        # id of the goal node
-        goalID = goal_y * self.constantObj.CONST_WIDTH + goal_x
-        assert(goalID in self.graph), "Goal can not be reached from start-point!"
-        listOfNeighbours = [self.startNode_id]
-        visitedNeighbours = []
-        while(len(listOfNeighbours) > 0):
-            nodeID = listOfNeighbours.pop(0)
-            visitedNeighbours.append(nodeID)
-            list = []
-            # iterate through all neighbours
-            for i, val in enumerate(self.graph[nodeID]):             
-                neighbourID = val
-                if neighbourID not in visitedNeighbours or neighbourID == self.startNode_id or neighbourID == goalID:
-                    list.append(neighbourID)               
-                    # add neighbours at the front of the list of unvisited nodes
-                    if neighbourID != self.startNode_id and neighbourID != goalID:
-                        listOfNeighbours.insert(0, neighbourID)
-            self.searchTree[nodeID] = list
-        for key, value in self.searchTree.items():
-            print key, value
