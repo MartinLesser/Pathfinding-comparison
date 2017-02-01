@@ -1,41 +1,46 @@
 from constants import CONST_WIDTH
 from constants import CONST_HEIGHT
 from constants import CONST_EMPTY_SYMBOL
+from Node import Node
 
 class Graph:
     def __init__(self):
-        self.graph = {}
-        self.searchTree = {}
-        self.startNode_x = 0
-        self.startNode_y = 0
-        self.startNode_id = self.startNode_y * CONST_WIDTH + self.startNode_x
+        self.nodes = []
+        startNode_x = 0 # for labyrinth
+        startNode_y = 0 # for labyrinth
+        self.startNode_key = startNode_y * CONST_WIDTH + startNode_x
+        self.startNode = None
         self.infinity = 99999
-        
+
+    def createCustomGraph(self):
+        None
+
     def createGraph(self, labyrinth):
         id = 0
+        existingNodeKeys = []
         for y in range(CONST_HEIGHT):
             for x in range(CONST_WIDTH):
                 if labyrinth.Matrix[y][x] == CONST_EMPTY_SYMBOL:
-                    list = []
-                    # north
-                    if y-1 >= 0 and labyrinth.Matrix[y-1][x] == CONST_EMPTY_SYMBOL:
-                        list.append(id-CONST_WIDTH)
+                    if(id not in existingNodeKeys):
+                        node = Node(id)
+                        existingNodeKeys.append(id)
                     # east
                     if x+1 < CONST_WIDTH and labyrinth.Matrix[y][x+1] == CONST_EMPTY_SYMBOL:
-                        list.append(id+1)
+                        eastChildNode = Node(id+1)
+                        node.addEdge(eastChildNode.key)
+                        eastChildNode.addEdge(node.key)
+                        # add to self.nodes. But you have to add the edges of this node too!!
                     # south
                     if y+1 < CONST_HEIGHT and labyrinth.Matrix[y+1][x] == CONST_EMPTY_SYMBOL:
-                        list.append(id+CONST_WIDTH)
-                    # west
-                    if x-1 >= 0 and labyrinth.Matrix[y][x-1] == CONST_EMPTY_SYMBOL:
-                        list.append(id-1)
-
-                    self.graph[id] = list
+                        southChildNode = Node(id+CONST_WIDTH)
+                        node.addEdge(southChildNode.key)
+                        southChildNode.addEdge(node.key)
+                    if(id == self.startNode_key): self.startNode = node
+                    self.nodes.append(node)
                 id += 1
     
     def printGraph(self):
-        for key, value in self.graph.items():
-            print key, value
+        print self.nodes
             
     def findAllPathsDijkstra(self):
         assert (len(self.graph) > 0),"Graph is empty!"
@@ -50,7 +55,7 @@ class Graph:
                 node['dist'] = self.infinity
             value.append(node)
             
-        unvisitedNodes = [self.startNode_id]
+        unvisitedNodes = [self.startNode_key]
         visitedNodes = []
         while(len(unvisitedNodes) > 0):
             unvisitedNodes.sort()
