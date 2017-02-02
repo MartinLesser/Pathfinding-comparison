@@ -17,30 +17,42 @@ class Graph:
 
     def createGraph(self, labyrinth):
         id = 0
+        node = None
         existingNodeKeys = []
+        #global nodes
         for y in range(CONST_HEIGHT):
             for x in range(CONST_WIDTH):
                 if labyrinth.Matrix[y][x] == CONST_EMPTY_SYMBOL:
-                    if(id not in existingNodeKeys):
+                    if(id not in existingNodeKeys or id == 0):
                         node = Node(id)
                         existingNodeKeys.append(id)
+                    else:
+                        # search for existing node
+                        for i in range(len(self.nodes)):
+                            if self.nodes.index(i).key == id:
+                                node = self.nodes.index(i)
+                                break
+                        assert (node != None),"Node key exists but couldn't be found in node-list!"
+
                     # east
                     if x+1 < CONST_WIDTH and labyrinth.Matrix[y][x+1] == CONST_EMPTY_SYMBOL:
                         eastChildNode = Node(id+1)
                         node.addEdge(eastChildNode.key)
                         eastChildNode.addEdge(node.key)
-                        # add to self.nodes. But you have to add the edges of this node too!!
+                        self.nodes.append(eastChildNode)
                     # south
                     if y+1 < CONST_HEIGHT and labyrinth.Matrix[y+1][x] == CONST_EMPTY_SYMBOL:
                         southChildNode = Node(id+CONST_WIDTH)
                         node.addEdge(southChildNode.key)
                         southChildNode.addEdge(node.key)
+                        self.nodes.append(southChildNode)
                     if(id == self.startNode_key): self.startNode = node
-                    self.nodes.append(node)
+                    if (id not in existingNodeKeys or id == 0): self.nodes.append(node)
                 id += 1
     
     def printGraph(self):
-        print self.nodes
+        for i,val in enumerate(self.nodes):
+            print str(val.key) + ' : ' + str(val.edges)
             
     def findAllPathsDijkstra(self):
         assert (len(self.graph) > 0),"Graph is empty!"
