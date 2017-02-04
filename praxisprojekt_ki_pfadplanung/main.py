@@ -1,8 +1,8 @@
-import Labyrinth
-import Graph
+from Labyrinth import Labyrinth
+from Graph import Graph
 
-labyrinth = Labyrinth.Labyrinth()
-graph = Graph.Graph()
+labyrinth = Labyrinth()
+graph = Graph()
 labyrinth.createCustomLabyrinth()
 labyrinth.printMatrix()
 graph.createGraph(labyrinth)

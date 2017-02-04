@@ -1,11 +1,12 @@
 from constants import CONST_WIDTH
 from constants import CONST_HEIGHT
 from constants import CONST_EMPTY_SYMBOL
-from Node import Node
+from Vertex import Vertex
 
 class Graph:
     def __init__(self):
-        self.nodes = []
+        self.vertices = []
+        self.edges = []
         startNode_x = 0 # for labyrinth
         startNode_y = 0 # for labyrinth
         self.startNode_key = startNode_y * CONST_WIDTH + startNode_x
@@ -17,41 +18,40 @@ class Graph:
 
     def createGraph(self, labyrinth):
         id = 0
-        node = None
-        existingNodeKeys = []
-        #global nodes
+        newVertex = None
+        existingVertexKeys = []
         for y in range(CONST_HEIGHT):
             for x in range(CONST_WIDTH):
                 if labyrinth.Matrix[y][x] == CONST_EMPTY_SYMBOL:
-                    if(id not in existingNodeKeys or id == 0):
-                        node = Node(id)
-                        existingNodeKeys.append(id)
+                    if(id not in existingVertexKeys or id == 0):
+                        newVertex = Vertex(id)
+                        existingVertexKeys.append(id)
                     else:
-                        # search for existing node
-                        for i in range(len(self.nodes)):
-                            if self.nodes.index(i).key == id:
-                                node = self.nodes.index(i)
+                        # search for existing newVertex
+                        for i in range(len(self.vertices)):
+                            if self.vertices.index(i).key == id:
+                                newVertex = self.vertices.index(i)
                                 break
-                        assert (node != None),"Node key exists but couldn't be found in node-list!"
+                        assert (newVertex != None),"Node key exists but couldn't be found in newVertex-list!"
 
                     # east
                     if x+1 < CONST_WIDTH and labyrinth.Matrix[y][x+1] == CONST_EMPTY_SYMBOL:
                         eastChildNode = Node(id+1)
-                        node.addEdge(eastChildNode.key)
-                        eastChildNode.addEdge(node.key)
-                        self.nodes.append(eastChildNode)
+                        newVertex.addEdge(eastChildNode.key)
+                        eastChildNode.addEdge(newVertex.key)
+                        self.vertices.append(eastChildNode)
                     # south
                     if y+1 < CONST_HEIGHT and labyrinth.Matrix[y+1][x] == CONST_EMPTY_SYMBOL:
                         southChildNode = Node(id+CONST_WIDTH)
-                        node.addEdge(southChildNode.key)
-                        southChildNode.addEdge(node.key)
-                        self.nodes.append(southChildNode)
-                    if(id == self.startNode_key): self.startNode = node
-                    if (id not in existingNodeKeys or id == 0): self.nodes.append(node)
+                        newVertex.addEdge(southChildNode.key)
+                        southChildNode.addEdge(newVertex.key)
+                        self.vertices.append(southChildNode)
+                    if(id == self.startNode_key): self.startNode = newVertex
+                    if (id not in existingVertexKeys or id == 0): self.vertices.append(newVertex)
                 id += 1
     
     def printGraph(self):
-        for i,val in enumerate(self.nodes):
+        for i,val in enumerate(self.vertices):
             print str(val.key) + ' : ' + str(val.edges)
             
     def findAllPathsDijkstra(self):
