@@ -5,6 +5,5 @@ class Vertex:
         self.value = value
         self.children = []
 
-
     def addChild(self, child):
         self.children.append(child)

@@ -2,6 +2,7 @@ from constants import CONST_WIDTH
 from constants import CONST_HEIGHT
 from constants import CONST_EMPTY_SYMBOL
 from Vertex import Vertex
+from Edge import Edge
 
 class Graph:
     def __init__(self):
@@ -18,41 +19,76 @@ class Graph:
 
     def createGraph(self, labyrinth):
         id = 0
+        existingVerticesKeys = [] # to know quickly which vertices exist already
         newVertex = None
-        existingVertexKeys = []
         for y in range(CONST_HEIGHT):
             for x in range(CONST_WIDTH):
                 if labyrinth.Matrix[y][x] == CONST_EMPTY_SYMBOL:
-                    if(id not in existingVertexKeys or id == 0):
+                    if(id not in existingVerticesKeys):
+                        existingVerticesKeys.append(id)
                         newVertex = Vertex(id)
-                        existingVertexKeys.append(id)
+                        self.vertices.append(newVertex)
                     else:
-                        # search for existing newVertex
+                        # search for existing vertex
                         for i in range(len(self.vertices)):
-                            if self.vertices.index(i).key == id:
-                                newVertex = self.vertices.index(i)
+                            if self.vertices[i].key == id:
+                                newVertex = self.vertices[i]
                                 break
-                        assert (newVertex != None),"Node key exists but couldn't be found in newVertex-list!"
+                    assert(newVertex != None), "Vertex exists but could not be found!"
 
                     # east
                     if x+1 < CONST_WIDTH and labyrinth.Matrix[y][x+1] == CONST_EMPTY_SYMBOL:
-                        eastChildNode = Node(id+1)
-                        newVertex.addEdge(eastChildNode.key)
-                        eastChildNode.addEdge(newVertex.key)
-                        self.vertices.append(eastChildNode)
+                        if (id+1 not in existingVerticesKeys):
+                            # create new vertex
+                            eastChildVertex = Vertex(id + 1)
+                            # add it to the vertices list
+                            self.vertices.append(eastChildVertex)
+                            existingVerticesKeys.append(id + 1)
+                        else:
+                            # search for existing vertex
+                            for i in range(len(self.vertices)):
+                                if self.vertices[i].key == id+1:
+                                    eastChildVertex = self.vertices[i]
+                                    break
+                        # add child to current vertex
+                        newVertex.addChild(eastChildVertex)
+                        # add child to eastChild
+                        eastChildVertex.addChild(newVertex)
+                        # create new edges and add it to the edges list
+                        self.edges.append(Edge(newVertex, eastChildVertex))
+                        self.edges.append(Edge(eastChildVertex, newVertex))
+
                     # south
                     if y+1 < CONST_HEIGHT and labyrinth.Matrix[y+1][x] == CONST_EMPTY_SYMBOL:
-                        southChildNode = Node(id+CONST_WIDTH)
-                        newVertex.addEdge(southChildNode.key)
-                        southChildNode.addEdge(newVertex.key)
-                        self.vertices.append(southChildNode)
+                        # create new vertex
+                        southChildVertex = Vertex(id+CONST_WIDTH)
+                        # add it to the vertices list
+                        self.vertices.append(southChildVertex)
+                        existingVerticesKeys.append(id + CONST_WIDTH)
+                        # add child to current vertex
+                        newVertex.addChild(southChildVertex)
+                        # add child to eastChild
+                        southChildVertex.addChild(newVertex)
+                        # create new edges and add it to the edges list
+                        self.edges.append(Edge(newVertex, southChildVertex))
+                        self.edges.append(Edge(southChildVertex, newVertex))
+
                     if(id == self.startNode_key): self.startNode = newVertex
-                    if (id not in existingVertexKeys or id == 0): self.vertices.append(newVertex)
                 id += 1
+                newVertex = None
+        #print sorted(existingVerticesKeys)
     
     def printGraph(self):
+        print 'Vertices:'
         for i,val in enumerate(self.vertices):
-            print str(val.key) + ' : ' + str(val.edges)
+            print str(val.key) + ' : ',
+            children = val.children
+            for i, val in enumerate(children):
+                print str(val.key),
+            print
+        print 'Edges:'
+        for i,val in enumerate(self.edges):
+            print 'Edge = (' + str(val.tuple[0].key) + ', ' + str(val.tuple[1].key) + ')' + ' : weight(' + str(val.weight) + ')'
             
     def findAllPathsDijkstra(self):
         assert (len(self.graph) > 0),"Graph is empty!"
