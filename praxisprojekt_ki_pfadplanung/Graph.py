@@ -1,5 +1,6 @@
 from Vertex import Vertex
 from Edge import Edge
+import math
 
 class Graph:
     def __init__(self):
@@ -34,11 +35,23 @@ class Graph:
             print str(vertex.key) + ' : Distance = ' + str(vertex.distance) \
                   + ' Predecessor = ' + str( 'None' if (vertex.predecessor == None) else vertex.predecessor.key)
 
+    def getEstimation(self, vertex, goalVertex):
+        return math.sqrt(abs(vertex.positionX-goalVertex.positionX)**2 + abs(vertex.positionY-goalVertex.positionY)**2)
+
     def getVertexWithSmallestDistance(self, list):
         min = self.infinity
         smallestVertex = None
         for index, vertex in enumerate(list):
             if vertex.distance < min:
+                min = vertex.distance
+                smallestVertex = vertex
+        return smallestVertex
+
+    def getSmallestASternVertex(self, list, goalVertex):
+        min = self.infinity
+        smallestVertex = None
+        for index, vertex in enumerate(list):
+            if vertex.distance + self.getEstimation(vertex, goalVertex) < min:
                 min = vertex.distance
                 smallestVertex = vertex
         return smallestVertex
@@ -79,6 +92,37 @@ class Graph:
         assert (goalVertex in self.vertices), "GoalVertex is not in Vertices!"
         self.findAllPathsDijkstra(startVertex)
         path=[]
+        path.append(goalVertex.key)
+        predecessor = goalVertex.predecessor
+        while predecessor != None:
+            path.append(predecessor.key)
+            predecessor = predecessor.predecessor
+        path.reverse()
+        return path
+
+    def findPathAStern(self, startVertex, goalVertex):
+        assert (len(self.vertices) > 0),"Graph is empty!"
+        assert (startVertex in self.vertices), "startVertex is not in Vertices!"
+        assert (goalVertex in self.vertices), "GoalVertex is not in Vertices!"
+        for index,vertex in enumerate(self.vertices):
+            # initialize start node with distance 0 everything else with infinity
+            if vertex.key == startVertex.key:
+                vertex.distance = 0
+            else:
+                vertex.distance = self.infinity
+
+        vertexQueue = [startVertex]
+        while(not(vertexQueue[0] == goalVertex and len(vertexQueue) == 1)):
+            vertex = self.getSmallestASternVertex(vertexQueue, goalVertex)
+            vertexQueue.remove(vertex)
+            # iterate through all neighbours and check the new distance
+            for index,child in enumerate(vertex.children):
+                # add unvisited neighbours to the list of unvisited nodes
+                if vertex.distance + self.getDistance(vertex, child) < child.distance:
+                    child.distance = vertex.distance + self.getDistance(vertex, child)
+                    child.predecessor = vertex
+                    vertexQueue.append(child)
+        path = []
         path.append(goalVertex.key)
         predecessor = goalVertex.predecessor
         while predecessor != None:
