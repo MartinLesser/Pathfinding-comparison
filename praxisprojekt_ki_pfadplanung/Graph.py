@@ -2,6 +2,7 @@ from constants import CONST_WIDTH
 from constants import CONST_HEIGHT
 from constants import CONST_EMPTY_SYMBOL
 from Vertex import Vertex
+from VertexDijkstra import VertexDijkstra
 from Edge import Edge
 
 class Graph:
@@ -89,52 +90,69 @@ class Graph:
         print 'Edges:'
         for i,val in enumerate(self.edges):
             print 'Edge = (' + str(val.tuple[0].key) + ', ' + str(val.tuple[1].key) + ')' + ' : weight(' + str(val.weight) + ')'
-            
+
+    def printDijkstraGraph(self):
+        print 'Vertices:'
+        for index,vertex in enumerate(self.vertices):
+            print str(vertex.key) + ' : Distance = ' + str(vertex.distance) \
+                  + ' Predecessor = ' + str( 'None' if (vertex.predecessor == None) else vertex.predecessor.key)
+
+    def getVertexWithSmallestDistance(self, list):
+        min = self.infinity
+        smallestVertex = None
+        for index, vertex in enumerate(list):
+            if vertex.distance < min:
+                min = vertex.distance
+                smallestVertex = vertex
+        return smallestVertex
+
+    def getDistance(self, vertex1, vertex2):
+        for index,edge in enumerate(self.edges):
+            if edge.tuple[0] == vertex1 and edge.tuple[1] == vertex2:
+                return edge.weight
+        return False
+
     def findAllPathsDijkstra(self):
-        assert (len(self.graph) > 0),"Graph is empty!"
-        # extend each item in graph and add previous node and distance
-        for key, value in self.graph.items():
-            node = {}
-            node['prev'] = None
+        assert (len(self.vertices) > 0),"Graph is empty!"
+        for index,vertex in enumerate(self.vertices):
             # initialize start node with distance 0 everything else with infinity
-            if key == 0:
-                node['dist'] = 0
+            if vertex.key == self.startNode_key:
+                vertex.distance = 0
             else:
-                node['dist'] = self.infinity
-            value.append(node)
-            
-        unvisitedNodes = [self.startNode_key]
+                vertex.distance = self.infinity
+
+        unvisitedNodes = [self.startNode]
         visitedNodes = []
         while(len(unvisitedNodes) > 0):
-            unvisitedNodes.sort()
-            nodeID = unvisitedNodes[0]
-            unvisitedNodes.remove(nodeID)
-            visitedNodes.append(nodeID)
+            vertex = self.getVertexWithSmallestDistance(unvisitedNodes)
+            unvisitedNodes.remove(vertex)
+            visitedNodes.append(vertex)
             # iterate through all neighbours and check the new distance
-            for i, val in enumerate(self.graph[nodeID]):
-                if isinstance(val, int):
-                    distance = self.graph[nodeID][len(self.graph[nodeID])-1]['dist']
-                    neighbourID = val
-                    # add unvisited neighbours to the list of unvisited nodes
-                    if not neighbourID in visitedNodes and not neighbourID in unvisitedNodes:
-                        unvisitedNodes.append(neighbourID)
-                    if neighbourID in unvisitedNodes and distance + 1 < self.graph[neighbourID][len(self.graph[neighbourID])-1]['dist']: 
-                        self.graph[neighbourID][len(self.graph[neighbourID])-1]['dist'] = distance + 1 # constant distance between adjacent fields
-                        self.graph[neighbourID][len(self.graph[neighbourID])-1]['prev'] = nodeID 
+            for index,child in enumerate(vertex.children):
+                # add unvisited neighbours to the list of unvisited nodes
+                if not child in visitedNodes and not child in unvisitedNodes:
+                    unvisitedNodes.append(child)
+                if child in unvisitedNodes and vertex.distance + self.getDistance(vertex, child) < child.distance:
+                    child.distance = vertex.distance + self.getDistance(vertex, child)
+                    child.predecessor = vertex
 
     def findPathDijkstra(self, goal_x, goal_y):
-        assert (len(self.graph) > 0),"Graph is empty!"
+        assert (len(self.vertices) > 0),"Graph is empty!"
         self.findAllPathsDijkstra()
-        assert(goal_x < CONST_WIDTH and goal_y < CONST_HEIGHT), "Goal is beyond the labyrinth"
+        assert(goal_x < CONST_WIDTH and goal_y < CONST_HEIGHT), "Goal is beyond the labyrinth!"
         path=[]
         # id of the goal node
         goalID = goal_y * CONST_WIDTH + goal_x
-        #
-        assert(goalID in self.graph), "Goal can not be reached from start-point!"
+        goalNode = None
+        for index,vertex in enumerate(self.vertices):
+            if vertex.key == goalID:
+                goalNode = vertex
+                break
+        assert(goalNode in self.vertices), "Goal can not be reached from start-point!"
         path.append(goalID)
-        previousNodeID = self.graph[goalID][len(self.graph[goalID])-1]['prev']
-        while previousNodeID != None:           
-            path.append(previousNodeID)
-            previousNodeID = self.graph[previousNodeID][len(self.graph[previousNodeID])-1]['prev']
+        predecessor = goalNode.predecessor
+        while predecessor != None:
+            path.append(predecessor.key)
+            predecessor = predecessor.predecessor
         path.reverse()
         return path
