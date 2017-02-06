@@ -1,3 +1,5 @@
+from Vertex import Vertex
+from Edge import Edge
 
 class Graph:
     def __init__(self):
@@ -5,8 +7,14 @@ class Graph:
         self.edges = []
         self.infinity = 99999
 
-    def createCustomGraph(self):
-        None
+    def addVertex(self, vertex):
+        self.vertices.append(vertex)
+
+    def addEdge(self, vertex1, vertex2, weight = 1):
+        assert(vertex1 in self.vertices and vertex2 in self.vertices), "Vertices don't exist in the graph!"
+        newEdge = Edge(vertex1, vertex2, weight)
+        self.edges.append(newEdge)
+        vertex1.children.append(vertex2)
     
     def printGraph(self):
         print 'Vertices:'
@@ -41,16 +49,16 @@ class Graph:
                 return edge.weight
         return False
 
-    def findAllPathsDijkstra(self):
+    def findAllPathsDijkstra(self, startVertex):
         assert (len(self.vertices) > 0),"Graph is empty!"
         for index,vertex in enumerate(self.vertices):
             # initialize start node with distance 0 everything else with infinity
-            if vertex.key == self.startNode_key:
+            if vertex.key == startVertex.key:
                 vertex.distance = 0
             else:
                 vertex.distance = self.infinity
 
-        unvisitedNodes = [self.startNode]
+        unvisitedNodes = [startVertex]
         visitedNodes = []
         while(len(unvisitedNodes) > 0):
             vertex = self.getVertexWithSmallestDistance(unvisitedNodes)
@@ -65,18 +73,14 @@ class Graph:
                     child.distance = vertex.distance + self.getDistance(vertex, child)
                     child.predecessor = vertex
 
-    def findPathDijkstra(self, goalNode):
+    def findPathDijkstra(self, startVertex, goalVertex):
         assert (len(self.vertices) > 0),"Graph is empty!"
-        self.findAllPathsDijkstra()
-        assert(goalNode in ), "Goal is beyond the labyrinth!"
+        assert (startVertex in self.vertices), "startVertex is not in Vertices!"
+        assert (goalVertex in self.vertices), "GoalVertex is not in Vertices!"
+        self.findAllPathsDijkstra(startVertex)
         path=[]
-        for index,vertex in enumerate(self.vertices):
-            if vertex.key == goalID:
-                goalNode = vertex
-                break
-        assert(goalNode in self.vertices), "Goal can not be reached from start-point!"
-        path.append(goalID)
-        predecessor = goalNode.predecessor
+        path.append(goalVertex.key)
+        predecessor = goalVertex.predecessor
         while predecessor != None:
             path.append(predecessor.key)
             predecessor = predecessor.predecessor
