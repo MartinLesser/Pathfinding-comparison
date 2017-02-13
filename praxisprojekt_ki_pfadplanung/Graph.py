@@ -1,4 +1,5 @@
 from Vertex import Vertex
+from DijkstraVertex import DijkstraVertex
 from Edge import Edge
 import math
 
@@ -7,15 +8,25 @@ class Graph:
         self.vertices = []
         self.edges = []
         self.infinity = 99999
+        self.dijkstraVertices = {}
 
     def addVertex(self, vertex):
         self.vertices.append(vertex)
 
-    def addEdge(self, vertex1, vertex2, weight = 1):
+    def addDirectedEdge(self, vertex1, vertex2, weight = 1):
         assert(vertex1 in self.vertices and vertex2 in self.vertices), "Vertices don't exist in the graph!"
         newEdge = Edge(vertex1, vertex2, weight)
         self.edges.append(newEdge)
-        vertex1.children.append(vertex2)
+        vertex1.addEdge(newEdge)
+
+    def addUndirectedEdge(self, vertex1, vertex2, weight=1):
+        assert (vertex1 in self.vertices and vertex2 in self.vertices), "Vertices don't exist in the graph!"
+        newEdge1 = Edge(vertex1, vertex2, weight)
+        newEdge2 = Edge(vertex2, vertex1, weight)
+        self.edges.append(newEdge1)
+        self.edges.append(newEdge2)
+        vertex1.addEdge(newEdge1)
+        vertex2.addEdge(newEdge2)
     
     def printGraph(self):
         print 'Vertices:'
@@ -32,8 +43,9 @@ class Graph:
     def printDijkstraGraph(self):
         print 'Vertices:'
         for index,vertex in enumerate(self.vertices):
-            print str(vertex.key) + ' : Distance = ' + str(vertex.distance) \
-                  + ' Predecessor = ' + str( 'None' if (vertex.predecessor == None) else vertex.predecessor.key)
+            print str(vertex.key) + ' : Distance = ' + str(self.dijkstraVertices[vertex].distance) \
+                  + ' Predecessor = ' + str( 'None' if (self.dijkstraVertices[vertex].predecessor == None)
+                                                               else self.dijkstraVertices[vertex].predecessor.key)
 
     def getEstimation(self, vertex, goalVertex):
         return math.sqrt(abs(vertex.positionX-goalVertex.positionX)**2 + abs(vertex.positionY-goalVertex.positionY)**2)
@@ -42,8 +54,8 @@ class Graph:
         min = self.infinity
         smallestVertex = None
         for index, vertex in enumerate(list):
-            if vertex.distance < min:
-                min = vertex.distance
+            if self.dijkstraVertices[vertex].distance < min:
+                min = self.dijkstraVertices[vertex].distance
                 smallestVertex = vertex
         return smallestVertex
 
@@ -51,25 +63,28 @@ class Graph:
         min = self.infinity
         smallestVertex = None
         for index, vertex in enumerate(list):
-            if vertex.distance + self.getEstimation(vertex, goalVertex) < min:
-                min = vertex.distance
+            if self.dijkstraVertices[vertex].distance + self.getEstimation(vertex, goalVertex) < min:
+                min = self.dijkstraVertices[vertex].distance
                 smallestVertex = vertex
         return smallestVertex
 
     def getDistance(self, vertex1, vertex2):
-        for index,edge in enumerate(self.edges):
-            if edge.tuple[0] == vertex1 and edge.tuple[1] == vertex2:
+        for index,edge in enumerate(vertex1.edges):
+            if edge.tuple[1] == vertex2:
                 return edge.weight
-        return False
+        print "Edge could not be found!"
 
     def findAllPathsDijkstra(self, startVertex):
         assert (len(self.vertices) > 0),"Graph is empty!"
+        # create for every vertex a dijkstraVertex and add it to a list
         for index,vertex in enumerate(self.vertices):
+            newDijkstraVertex = DijkstraVertex()
             # initialize start node with distance 0 everything else with infinity
             if vertex.key == startVertex.key:
-                vertex.distance = 0
+                newDijkstraVertex.distance = 0
             else:
-                vertex.distance = self.infinity
+                newDijkstraVertex.distance = self.infinity
+            self.dijkstraVertices[vertex] = newDijkstraVertex
 
         unvisitedNodes = [startVertex]
         visitedNodes = []
@@ -82,9 +97,11 @@ class Graph:
                 # add unvisited neighbours to the list of unvisited nodes
                 if not child in visitedNodes and not child in unvisitedNodes:
                     unvisitedNodes.append(child)
-                if child in unvisitedNodes and vertex.distance + self.getDistance(vertex, child) < child.distance:
-                    child.distance = vertex.distance + self.getDistance(vertex, child)
-                    child.predecessor = vertex
+                if child in unvisitedNodes and \
+                                        self.dijkstraVertices[vertex].distance + self.getDistance(vertex, child) \
+                                                                                < self.dijkstraVertices[child].distance:
+                    self.dijkstraVertices[child].distance = self.dijkstraVertices[vertex].distance + self.getDistance(vertex, child)
+                    self.dijkstraVertices[child].predecessor = vertex
 
     def findPathDijkstra(self, startVertex, goalVertex):
         assert (len(self.vertices) > 0),"Graph is empty!"
@@ -93,10 +110,10 @@ class Graph:
         self.findAllPathsDijkstra(startVertex)
         path=[]
         path.append(goalVertex.key)
-        predecessor = goalVertex.predecessor
+        predecessor = self.dijkstraVertices[goalVertex].predecessor
         while predecessor != None:
             path.append(predecessor.key)
-            predecessor = predecessor.predecessor
+            predecessor = self.dijkstraVertices[predecessor].predecessor
         path.reverse()
         return path
 
@@ -104,12 +121,15 @@ class Graph:
         assert (len(self.vertices) > 0),"Graph is empty!"
         assert (startVertex in self.vertices), "startVertex is not in Vertices!"
         assert (goalVertex in self.vertices), "GoalVertex is not in Vertices!"
-        for index,vertex in enumerate(self.vertices):
+        # create for every vertex a dijkstraVertex and add it to a list
+        for index, vertex in enumerate(self.vertices):
+            newDijkstraVertex = DijkstraVertex()
             # initialize start node with distance 0 everything else with infinity
             if vertex.key == startVertex.key:
-                vertex.distance = 0
+                newDijkstraVertex.distance = 0
             else:
-                vertex.distance = self.infinity
+                newDijkstraVertex.distance = self.infinity
+            self.dijkstraVertices[vertex] = newDijkstraVertex
 
         vertexQueue = [startVertex]
         while(not(vertexQueue[0] == goalVertex and len(vertexQueue) == 1)):
@@ -118,15 +138,15 @@ class Graph:
             # iterate through all neighbours and check the new distance
             for index,child in enumerate(vertex.children):
                 # add unvisited neighbours to the list of unvisited nodes
-                if vertex.distance + self.getDistance(vertex, child) < child.distance:
-                    child.distance = vertex.distance + self.getDistance(vertex, child)
-                    child.predecessor = vertex
+                if self.dijkstraVertices[vertex].distance + self.getDistance(vertex, child) < self.dijkstraVertices[child].distance:
+                    self.dijkstraVertices[child].distance = self.dijkstraVertices[vertex].distance + self.getDistance(vertex, child)
+                    self.dijkstraVertices[child].predecessor = vertex
                     vertexQueue.append(child)
         path = []
         path.append(goalVertex.key)
-        predecessor = goalVertex.predecessor
+        predecessor = self.dijkstraVertices[goalVertex].predecessor
         while predecessor != None:
             path.append(predecessor.key)
-            predecessor = predecessor.predecessor
+            predecessor = self.dijkstraVertices[predecessor].predecessor
         path.reverse()
         return path
