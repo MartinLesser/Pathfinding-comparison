@@ -1,7 +1,8 @@
-from Vertex import Vertex
 from DijkstraVertex import DijkstraVertex
 from Edge import Edge
 import math
+import networkx as nx
+import matplotlib.pyplot as plt
 
 class Graph:
     def __init__(self):
@@ -39,6 +40,20 @@ class Graph:
         print 'Edges:'
         for i,val in enumerate(self.edges):
             print 'Edge = (' + str(val.tuple[0].key) + ', ' + str(val.tuple[1].key) + ')' + ' : weight(' + str(val.weight) + ')'
+
+    def drawGraph(self):
+        G = nx.Graph()
+        for index, vertex in enumerate(self.vertices):
+            G.add_node(vertex.key, pos=(vertex.positionX, vertex.positionY))
+        for index, edge in enumerate(self.edges):
+            G.add_edge(edge.tuple[0].key,edge.tuple[1].key, weight=edge.weight)
+        pos = nx.get_node_attributes(G, 'pos')
+        nx.draw(G, pos, with_labels=True)
+        labels = nx.get_edge_attributes(G, 'weight')
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+        plt.savefig('simple_graph')
+        plt.show()
+
 
     def printDijkstraGraph(self):
         print 'Vertices:'
@@ -103,7 +118,7 @@ class Graph:
                     self.dijkstraVertices[child].distance = self.dijkstraVertices[vertex].distance + self.getDistance(vertex, child)
                     self.dijkstraVertices[child].predecessor = vertex
 
-    def findPathDijkstra(self, startVertex, goalVertex):
+    def getPathDijkstra(self, startVertex, goalVertex):
         assert (len(self.vertices) > 0),"Graph is empty!"
         assert (startVertex in self.vertices), "startVertex is not in Vertices!"
         assert (goalVertex in self.vertices), "GoalVertex is not in Vertices!"
@@ -116,8 +131,48 @@ class Graph:
             predecessor = self.dijkstraVertices[predecessor].predecessor
         path.reverse()
         return path
+# TODO: all algorithms use the same dictionary!
+    def findPathDijkstra(self, startVertex, goalVertex):
+        assert (len(self.vertices) > 0),"Graph is empty!"
+        assert (startVertex in self.vertices), "startVertex is not in Vertices!"
+        assert (goalVertex in self.vertices), "GoalVertex is not in Vertices!"
+        # create for every vertex a dijkstraVertex and add it to a list
+        for index,vertex in enumerate(self.vertices):
+            newDijkstraVertex = DijkstraVertex()
+            # initialize start node with distance 0 everything else with infinity
+            if vertex.key == startVertex.key:
+                newDijkstraVertex.distance = 0
+            else:
+                newDijkstraVertex.distance = self.infinity
+            self.dijkstraVertices[vertex] = newDijkstraVertex
 
-    def findPathAStern(self, startVertex, goalVertex):
+        unvisitedNodes = [startVertex]
+        visitedNodes = []
+        while(len(unvisitedNodes) > 0):
+            vertex = self.getVertexWithSmallestDistance(unvisitedNodes)
+            if vertex == goalVertex: break
+            unvisitedNodes.remove(vertex)
+            visitedNodes.append(vertex)
+            # iterate through all neighbours and check the new distance
+            for index,child in enumerate(vertex.children):
+                # add unvisited neighbours to the list of unvisited nodes
+                if not child in visitedNodes and not child in unvisitedNodes:
+                    unvisitedNodes.append(child)
+                if child in unvisitedNodes and \
+                                        self.dijkstraVertices[vertex].distance + self.getDistance(vertex, child) \
+                                                                                < self.dijkstraVertices[child].distance:
+                    self.dijkstraVertices[child].distance = self.dijkstraVertices[vertex].distance + self.getDistance(vertex, child)
+                    self.dijkstraVertices[child].predecessor = vertex
+        path = []
+        path.append(goalVertex.key)
+        predecessor = self.dijkstraVertices[goalVertex].predecessor
+        while predecessor != None:
+            path.append(predecessor.key)
+            predecessor = self.dijkstraVertices[predecessor].predecessor
+        path.reverse()
+        return path
+
+    def findPathAStar(self, startVertex, goalVertex):
         assert (len(self.vertices) > 0),"Graph is empty!"
         assert (startVertex in self.vertices), "startVertex is not in Vertices!"
         assert (goalVertex in self.vertices), "GoalVertex is not in Vertices!"
@@ -150,3 +205,5 @@ class Graph:
             predecessor = self.dijkstraVertices[predecessor].predecessor
         path.reverse()
         return path
+
+    ## ToDO: Zeitmessen + Zufaellige Graphen erzeugen mit zufaelliger Groesse
