@@ -10,6 +10,12 @@ class Vertex:
     def addEdge(self, edge):
         self.edges.append(edge)
 
+    def getEdge(self, vertex2):
+        for index,edge in enumerate(self.edges):
+            if edge.destination == vertex2:
+                return edge.weight
+        print "Edge could not be found!"
+
     @property
     def children(self):
-        return [edge.tuple[1] for edge in self.edges]
+        return [edge.destination for edge in self.edges]
