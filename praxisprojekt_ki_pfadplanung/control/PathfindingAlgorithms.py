@@ -53,30 +53,25 @@ class PathfindingAlgorithms:
         assert (len(graph.vertices) > 0), "Graph is empty!"
         self.initializeDijkstraVertices(graph, startVertex)
 
-        unvisitedNodes = [startVertex]
-        visitedNodes = []
-        while (len(unvisitedNodes) > 0):
-            vertex = self.getVertexWithSmallestDistance(graph, unvisitedNodes)
-            unvisitedNodes.remove(vertex)
-            visitedNodes.append(vertex)
+        vertexQueue = [startVertex]
+        while (len(vertexQueue) > 0):
+            vertex = self.getVertexWithSmallestDistance(graph, vertexQueue)
+            vertexQueue.remove(vertex)
+            vertexDistance = graph.dijkstraVertices[vertex].distance
             # iterate through all neighbours and check the new distance
             for index, child in enumerate(vertex.children):
-                # add unvisited neighbours to the list of unvisited nodes
-                if not child in visitedNodes and not child in unvisitedNodes:
-                    unvisitedNodes.append(child)
-                if child in unvisitedNodes and \
-                                        graph.dijkstraVertices[vertex].distance + vertex.getEdge(child) \
-                                < graph.dijkstraVertices[child].distance:
-                    graph.dijkstraVertices[child].distance = graph.dijkstraVertices[vertex].distance + vertex.getEdge(child)
+                if graph.dijkstraVertices[child].distance == float('inf'):
+                    vertexQueue.append(child)
+                edgeWeight = vertex.getEdgeWeight(child)
+                if vertexDistance + edgeWeight < graph.dijkstraVertices[child].distance:
+                    graph.dijkstraVertices[child].distance = vertexDistance + edgeWeight
                     graph.dijkstraVertices[child].predecessor = vertex
 
     def getPathDijkstra(self, graph, startVertex, goalVertex):
         assert (len(graph.vertices) > 0), "Graph is empty!"
         assert (startVertex in graph.vertices), "startVertex is not in Vertices!"
         assert (goalVertex in graph.vertices), "GoalVertex is not in Vertices!"
-
         self.findAllPathsDijkstra(graph, startVertex)
-
         return self.getPath(graph, goalVertex)
 
     def findPathDijkstra(self, graph, startVertex, goalVertex):
@@ -85,22 +80,19 @@ class PathfindingAlgorithms:
         assert (goalVertex in graph.vertices), "GoalVertex is not in Vertices!"
         self.initializeDijkstraVertices(graph, startVertex)
 
-        unvisitedNodes = [startVertex]
-        visitedNodes = []
-        while (len(unvisitedNodes) > 0):
-            vertex = self.getVertexWithSmallestDistance(graph, unvisitedNodes)
+        vertexQueue = [startVertex]
+        while (len(vertexQueue) > 0):
+            vertex = self.getVertexWithSmallestDistance(graph, vertexQueue)
             if vertex == goalVertex: break
-            unvisitedNodes.remove(vertex)
-            visitedNodes.append(vertex)
+            vertexQueue.remove(vertex)
+            vertexDistance = graph.dijkstraVertices[vertex].distance
             # iterate through all neighbours and check the new distance
             for index, child in enumerate(vertex.children):
-                # add unvisited neighbours to the list of unvisited nodes
-                if not child in visitedNodes and not child in unvisitedNodes:
-                    unvisitedNodes.append(child)
-                if child in unvisitedNodes and \
-                                        graph.dijkstraVertices[vertex].distance + vertex.getEdge(child) \
-                                < graph.dijkstraVertices[child].distance:
-                    graph.dijkstraVertices[child].distance = graph.dijkstraVertices[vertex].distance + vertex.getEdge(child)
+                if graph.dijkstraVertices[child].distance == float('inf'):
+                    vertexQueue.append(child)
+                edgeWeight = vertex.getEdgeWeight(child)
+                if vertexDistance + edgeWeight < graph.dijkstraVertices[child].distance:
+                    graph.dijkstraVertices[child].distance = vertexDistance + edgeWeight
                     graph.dijkstraVertices[child].predecessor = vertex
         return self.getPath(graph, goalVertex)
 
@@ -112,17 +104,18 @@ class PathfindingAlgorithms:
         self.initializeDijkstraVertices(graph, startVertex)
 
         vertexQueue = [startVertex]
-        while (not (vertexQueue[0] == goalVertex and len(vertexQueue) == 1)):
+        while (len(vertexQueue) > 0):
             vertex = self.getSmallestAStarVertex(graph, vertexQueue, goalVertex)
+            if vertex == goalVertex: break;
             vertexQueue.remove(vertex)
+            vertexDistance = graph.dijkstraVertices[vertex].distance
             # iterate through all neighbours and check the new distance
             for index, child in enumerate(vertex.children):
-                # add unvisited neighbours to the list of unvisited nodes
-                if graph.dijkstraVertices[vertex].distance + vertex.getEdge(child) < graph.dijkstraVertices[
-                    child].distance:
-                    graph.dijkstraVertices[child].distance = graph.dijkstraVertices[vertex].distance + vertex.getEdge(child)
+                edgeWeight = vertex.getEdgeWeight(child)
+                if vertexDistance + edgeWeight < graph.dijkstraVertices[child].distance:
+                    graph.dijkstraVertices[child].distance = vertexDistance + edgeWeight
                     graph.dijkstraVertices[child].predecessor = vertex
-                    vertexQueue.append(child)
+                    vertexQueue.append(child) # indirect implementation of the closed-list
         return self.getPath(graph, goalVertex)
 
 # ToDO: Zeitmessen + Zufaellige Graphen erzeugen mit zufaelliger Groesse

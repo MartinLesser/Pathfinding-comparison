@@ -10,7 +10,7 @@ class Vertex:
     def addEdge(self, edge):
         self.edges.append(edge)
 
-    def getEdge(self, vertex2):
+    def getEdgeWeight(self, vertex2):
         for index,edge in enumerate(self.edges):
             if edge.destination == vertex2:
                 return edge.weight

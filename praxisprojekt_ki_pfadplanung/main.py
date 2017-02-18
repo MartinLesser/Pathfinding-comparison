@@ -36,7 +36,7 @@ def main():
     #print pf.getPathDijkstra(graph, vertex1, vertex2)
     #print pf.findPathDijkstra(graph, vertex1, vertex2)
     print pf.findPathAStar(graph, vertex1, vertex2)
-    output.drawGraph(graph)
+    #output.drawGraph(graph)
 
 if __name__ == "__main__": main()
 
