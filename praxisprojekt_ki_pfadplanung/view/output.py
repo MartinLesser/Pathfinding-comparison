@@ -1,8 +1,12 @@
+"""
+This module ...
+"""
+
 import matplotlib.pyplot as plt
 import networkx as nx
 
 class Output:
-    def printGraph(self, graph):
+    def print_graph(self, graph):
         print 'Vertices:'
         for index,vertex in enumerate(graph.vertices):
             print str(vertex.key) + ' : ',
@@ -14,7 +18,7 @@ class Output:
         for i,vertex in enumerate(graph.edges):
             print 'Edge = (' + str(vertex.source.key) + ', ' + str(vertex.destination.key) + ')' + ' : weight(' + str(vertex.weight) + ')'
 
-    def drawGraph(self, graph):
+    def draw_graph(self, graph):
         G = nx.Graph()
         for index, vertex in enumerate(graph.vertices):
             G.add_node(vertex.key, pos=(vertex.positionX, vertex.positionY))
@@ -28,10 +32,10 @@ class Output:
         plt.show()
 
 
-    def printDijkstraGraph(self, graph):
-        assert(graph.dijkstraVertices), "Dijkstra-function has not been called yet!"
+    def print_dijkstra_graph(self, graph):
+        assert(graph.dijkstra_vertices), "Dijkstra-function has not been called yet!"
         print 'Vertices:'
         for index,vertex in enumerate(graph.vertices):
-            print str(vertex.key) + ' : Distance = ' + str(graph.dijkstraVertices[vertex].distance) \
-                  + ' Predecessor = ' + str( 'None' if (graph.dijkstraVertices[vertex].predecessor == None)
-                                                               else graph.dijkstraVertices[vertex].predecessor.key)
+            print str(vertex.key) + ' : Distance = ' + str(graph.dijkstra_vertices[vertex].distance) \
+                  + ' Predecessor = ' + str( 'None' if (graph.dijkstra_vertices[vertex].predecessor == None)
+                                                               else graph.dijkstra_vertices[vertex].predecessor.key)

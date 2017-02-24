@@ -1,3 +1,6 @@
+"""
+This module ...
+"""
 
 class Vertex:
     def __init__(self, key, positionX = 0, positionY = 0, value = None):
@@ -7,10 +10,10 @@ class Vertex:
         self.positionX = positionX
         self.positionY = positionY
 
-    def addEdge(self, edge):
+    def add_edge(self, edge):
         self.edges.append(edge)
 
-    def getEdgeWeight(self, vertex2):
+    def get_edge_weight(self, vertex2):
         for index,edge in enumerate(self.edges):
             if edge.destination == vertex2:
                 return edge.weight

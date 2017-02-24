@@ -1,3 +1,7 @@
+"""
+This module ...
+"""
+
 class Edge:
     def __init__(self, vertex1, vertex2, weight = 1):
         self.source = vertex1
