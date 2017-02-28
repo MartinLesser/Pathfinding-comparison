@@ -1,42 +1,82 @@
 from praxisprojekt_ki_pfadplanung.model.graph import Graph
 from praxisprojekt_ki_pfadplanung.model.vertex import Vertex
+from praxisprojekt_ki_pfadplanung.model.labyrinth import Labyrinth
+from praxisprojekt_ki_pfadplanung.model.priority_queue import PriorityQueue, Priority
 from praxisprojekt_ki_pfadplanung.view.output import Output
-from praxisprojekt_ki_pfadplanung.control.pathfinding_algorithms import PathfindingAlgorithms
+from praxisprojekt_ki_pfadplanung.control.dijkstra import Dijkstra
+from praxisprojekt_ki_pfadplanung.control.a_star import AStar
+from praxisprojekt_ki_pfadplanung.control.d_star_lite import DStarLite
+import time
 
 def main():
-    graph = Graph()
+    #test_a_star()
+    test_d_star()
+
+def test_a_star():
+    f = open('a_star_performance', 'w')
     output = Output()
-    pf = PathfindingAlgorithms()
-    vertex1 = Vertex(1, 25, 100)
-    graph.add_vertex(vertex1)
-    vertex2 = Vertex(2, 75, 100)
-    graph.add_vertex(vertex2)
-    vertex3 = Vertex(3, 100, 90)
-    graph.add_vertex(vertex3)
-    vertex4 = Vertex(4, 100, 40)
-    graph.add_vertex(vertex4)
-    vertex5 = Vertex(5, 75, 25)
-    graph.add_vertex(vertex5)
-    vertex6 = Vertex(6, 25, 25)
-    graph.add_vertex(vertex6)
-    vertex7 = Vertex(7, 10, 50)
-    graph.add_vertex(vertex7)
+    seed = 9
+    for i in range(10):
+        passable_graph_found = False
+        while passable_graph_found == False:
+            graph = Graph()
+            #print seed
+            labyrinth = Labyrinth(seed)
+            labyrinth.makeLabyrinth()
+            graph.create_graph_from_labyrinth(labyrinth)
 
-    graph.add_undirected_edge(vertex1, vertex7, 4)
-    graph.add_undirected_edge(vertex7, vertex6, 2)
-    graph.add_undirected_edge(vertex1, vertex5, 10)
-    graph.add_undirected_edge(vertex6, vertex5, 3)
-    graph.add_undirected_edge(vertex5, vertex4, 9)
-    graph.add_undirected_edge(vertex5, vertex3, 7)
-    graph.add_undirected_edge(vertex2, vertex3, 2)
 
-    #output.print_graph(graph)
-    #pf.find_all_paths_dijkstra(graph, vertex1)
-    #output.print_dijkstra_graph(graph)
-    #print pf.get_path_dijkstra(graph, vertex1, vertex2)
-    #print pf.find_path_dijkstra(graph, vertex1, vertex2)
-    print pf.find_path_a_star(graph, vertex1, vertex2)
-    output.draw_graph(graph)
+            start_vertex = graph.get_vertex(graph.vertices[0].key)
+            #print start_vertex.key
+            goal_vertex = graph.get_vertex(graph.vertices[len(graph.vertices) - 1].key)
+            #print goal_vertex.key
+
+            a_star = AStar(graph, start_vertex, goal_vertex)
+            if len(a_star.find_path_a_star()) > 1:
+                #print a_star.get_path()
+                #output.draw_graph(graph)
+                passable_graph_found = True
+                start_time = time.time()
+                if a_star.walk_path() == False:
+                    passable_graph_found = False
+                else:
+                    f.write("%u\t %s s\n" % (i, time.time() - start_time))
+            seed += 1
+    f.close()
+
+def test_d_star():
+    f = open('d_star_lite_performance', 'w')
+    output = Output()
+    seed = 9
+    for i in range(10):
+        passable_graph_found = False
+        while passable_graph_found == False:
+            graph = Graph()
+
+            labyrinth = Labyrinth(seed)
+            labyrinth.makeLabyrinth()
+            graph.create_graph_from_labyrinth(labyrinth)
+            # output.draw_graph(graph)
+
+            start_vertex = graph.get_vertex(graph.vertices[0].key)
+            goal_vertex = graph.get_vertex(graph.vertices[len(graph.vertices) - 1].key)
+
+            dl = DStarLite(graph, start_vertex, goal_vertex)
+            dl.initialize()
+            dl.compute_shortest_path()
+            if len(dl.get_path()) > 1:
+                dl.rhs = {}
+                dl.distance = {}
+                # print dl.get_path()
+                # output.draw_graph(graph)
+                passable_graph_found = True
+                start_time = time.time()
+                if dl.find_path_d_star_lite() == False:
+                    passable_graph_found = False
+                else:
+                    f.write("%u\t %s s\n" % (i, time.time() - start_time))
+            seed += 1
+    f.close()
 
 if __name__ == "__main__": main()
 

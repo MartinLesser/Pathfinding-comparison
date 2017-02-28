@@ -32,10 +32,10 @@ class Output:
         plt.show()
 
 
-    def print_dijkstra_graph(self, graph):
-        assert(graph.dijkstra_vertices), "Dijkstra-function has not been called yet!"
+    def print_dijkstra_graph(self, graph, algorithm):
+        assert(algorithm.dijkstra_vertices), "Dijkstra-function has not been called yet!"
         print 'Vertices:'
         for index,vertex in enumerate(graph.vertices):
-            print str(vertex.key) + ' : Distance = ' + str(graph.dijkstra_vertices[vertex].distance) \
-                  + ' Predecessor = ' + str( 'None' if (graph.dijkstra_vertices[vertex].predecessor == None)
-                                                               else graph.dijkstra_vertices[vertex].predecessor.key)
+            print str(vertex.key) + ' : Distance = ' + str(algorithm.dijkstra_vertices[vertex].distance) \
+                  + ' Predecessor = ' + str( 'None' if (algorithm.dijkstra_vertices[vertex].predecessor == None)
+                                                               else algorithm.dijkstra_vertices[vertex].predecessor.key)

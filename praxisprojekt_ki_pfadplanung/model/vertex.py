@@ -22,3 +22,10 @@ class Vertex:
     @property
     def children(self):
         return [edge.destination for edge in self.edges]
+
+    def get_predecessors(self, graph):
+        set_predecessors = set()
+        for index, edge in enumerate(graph.edges):
+            if edge.destination == self:
+                set_predecessors.add(edge.source)
+        return set_predecessors
