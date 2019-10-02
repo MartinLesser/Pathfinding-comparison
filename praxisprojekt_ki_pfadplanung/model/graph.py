@@ -1,30 +1,10 @@
-"""
-This module ...
-"""
-
 from praxisprojekt_ki_pfadplanung.constants import WIDTH, HEIGHT, EMPTY_SYMBOL
 from praxisprojekt_ki_pfadplanung.model.edge import Edge
 from praxisprojekt_ki_pfadplanung.model.vertex import Vertex
 
 
 class Graph:
-    # ToDo: comments
-    """
-    Class xyz
-
-    Attributes
-    ----------
-    classes_ : array of shape = [n_classes] or a list of such arrays
-        The classes labels (single output problem),
-        or a list of arrays of class labels (multi-output problem).
-    feature_importances_ : array of shape = [n_features]
-        The feature importances. The higher, the more important the
-        feature. The importance of a feature is computed as the (normalized)
-        total reduction of the criterion brought by that feature.  It is also
-        known as the Gini importance [4]_.
-    max_features_ : int,
-        The inferred value of max_features.
-    """
+   
     def __init__(self):
         self.vertices = []
         self.edges = []
