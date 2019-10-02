@@ -1,7 +1,3 @@
-"""
-This module ...
-"""
-
 from praxisprojekt_ki_pfadplanung.model.dijkstra_vertex import DijkstraVertex
 
 class Dijkstra:
@@ -39,27 +35,6 @@ class Dijkstra:
         return path
 
     def find_all_paths_dijkstra(self, graph, start_vertex):
-        # ToDo: comments
-        """
-        Returns the index of the leaf that each sample is predicted as.
-        .. versionadded:: 0.17
-        Parameters
-        ----------
-        X : array_like or sparse matrix, shape = [n_samples, n_features]
-            The input samples. Internally, it will be converted to
-            ``dtype=np.float32`` and if a sparse matrix is provided
-            to a sparse ``csr_matrix``.
-        check_input : boolean, (default=True)
-            Allow to bypass several input checking.
-            Don't use this parameter unless you know what you do.
-        Returns
-        -------
-        X_leaves : array_like, shape = [n_samples,]
-            For each datapoint x in X, return the index of the leaf x
-            ends up in. Leaves are numbered within
-            ``[0; self.tree_.node_count)``, possibly with gaps in the
-            numbering.
-        """
         assert (len(graph.vertices) > 0), "Graph is empty!"
         self.initialize_dijkstra_vertices(graph, start_vertex)
 
@@ -105,5 +80,3 @@ class Dijkstra:
                     self.dijkstra_vertices[child].distance = vertex_distance + edge_weight
                     self.dijkstra_vertices[child].predecessor = vertex
         return self.get_path(graph, goal_vertex)
-
-# ToDO: Zeitmessen + Zufaellige Graphen erzeugen mit zufaelliger Groesse
